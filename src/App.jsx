@@ -1,11 +1,11 @@
 import { Route, Routes } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import Home from "./Pages/Home";
-import ShopPage from "./Pages/Shop";
-import BrandsPage from "./Pages/Brand";
-import SalePage from "./Pages/Sales";
-import AboutPage from "./Pages/About";
+import Home from "./pages/Home";
+import ShopPage from "./pages/Shop";
+import BrandsPage from "./pages/Brand";
+import SalePage from "./pages/Sales";
+import AboutPage from "./pages/About";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { OrderProvider } from "./context/OrderContext";
