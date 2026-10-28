@@ -1,11 +1,15 @@
 import { createContext, useContext, useState } from "react";
+import { useAuth } from "./AuthContext";
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const { user } = useAuth();
 
   const addToCart = (product) => {
+    if (!user) return false;
+
     setCartItems(prev => {
       const existing = prev.find(i => i.id === product.id);
       if (existing) {
@@ -16,6 +20,7 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, { ...product, qty: 1 }];
     });
+    return true;
   };
 
   const removeFromCart = (id) => {

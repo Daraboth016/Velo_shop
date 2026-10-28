@@ -164,6 +164,7 @@ const Navbar = () => {
             ["BRANDS", "/brands"],
             ["SALE", "/sale"],
             ["ABOUT", "/about"],
+            ["CONTACT", "/contact"],
           ].map(([label, path]) => (
             <NavLink
               key={label}

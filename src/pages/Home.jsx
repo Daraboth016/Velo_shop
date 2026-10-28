@@ -1,6 +1,9 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import bannerSramImg from "../assets/banner/BannerSram.png";
+import campagnoloBannerImg from "../assets/banner/Campagnolo banner.png";
+import shimanoCuesBannerImg from "../assets/banner/ShimanoCues.png";
 
 import shimanoXtImg from "../assets/Shimano XT M8100 Groupset.png";
 import sramCodeRscImg from "../assets/SRAM Code RSC Brake Set.png";
@@ -8,6 +11,27 @@ import shimanoSpdImg from "../assets/Shimano SPD-SL PD-R9100 Pedals.png";
 import sramXx1Img from "../assets/SRAM XX1 Eagle 12-Speed Cassette.png";
 import shimanoWheelsetImg from "../assets/Shimano WH-R9200 Dura-Ace Wheelset.png";
 import sramRedAxsImg from "../assets/SRAM Red AXS Power Meter Crankset.png";
+
+const heroBanners = [
+  {
+    image: bannerSramImg,
+    tag: "RACE-READY GEAR",
+    eyebrow: "BUILT FOR THE NEXT MILE",
+    title: "COMPONENTS WITHOUT COMPROMISE",
+  },
+  {
+    image: shimanoCuesBannerImg,
+    tag: "SHIMANO CUES",
+    eyebrow: "SMOOTH. STRONG. READY.",
+    title: "SHIFT INTO YOUR NEXT ADVENTURE",
+  },
+  {
+    image: campagnoloBannerImg,
+    tag: "CAMPAGNOLO",
+    eyebrow: "ITALIAN RACING HERITAGE",
+    title: "ENGINEERED TO GO FURTHER",
+  },
+];
 
 const products = [
   {
@@ -110,9 +134,19 @@ const categories = [
 ];
 
 export default function Home() {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("All");
   const [addedId, setAddedId] = useState(null);
+  const [activeBanner, setActiveBanner] = useState(0);
   const { addToCart } = useCart();
+
+  useEffect(() => {
+    const bannerTimer = setInterval(() => {
+      setActiveBanner((current) => (current + 1) % heroBanners.length);
+    }, 5000);
+
+    return () => clearInterval(bannerTimer);
+  }, []);
 
   const filtered =
     activeCategory === "All"
@@ -120,7 +154,10 @@ export default function Home() {
       : products.filter((p) => p.category === activeCategory);
 
   const handleAdd = (product) => {
-    addToCart(product);
+    if (!addToCart(product)) {
+      navigate("/account");
+      return;
+    }
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1200);
   };
@@ -199,6 +236,7 @@ export default function Home() {
         ))}
 
         <div
+          className="hero-content"
           style={{
             position: "relative",
             zIndex: 2,
@@ -212,7 +250,7 @@ export default function Home() {
             alignItems: "center",
           }}
         >
-          <div>
+          <div className="hero-copy">
             <div
               style={{
                 display: "inline-flex",
@@ -274,6 +312,154 @@ export default function Home() {
             </p>
             {/* Add this style tag once in your component */}
             <style>{`
+              .hero-content {
+                min-height: calc(100vh - 64px);
+              }
+              .hero-copy {
+                animation: heroCopyIn 0.8s ease both;
+              }
+              .hero-banner {
+                position: relative;
+                z-index: 1;
+                width: min(100%, 640px);
+                aspect-ratio: 1.35;
+                margin-left: auto;
+                flex-shrink: 0;
+                overflow: hidden;
+                border: 1px solid rgba(255,255,255,0.14);
+                box-shadow: 24px 28px 0 rgba(255,85,0,0.08), 0 24px 70px rgba(0,0,0,0.5);
+                transform: rotate(2deg);
+                animation: heroBannerIn 1s 0.15s ease both;
+              }
+              .hero-banner::after {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(90deg, rgba(8,8,8,0.6), transparent 55%, rgba(8,8,8,0.12)), linear-gradient(0deg, rgba(8,8,8,0.7), transparent 48%);
+                pointer-events: none;
+              }
+              .hero-banner-image {
+                width: 100%;
+                height: 100%;
+                display: block;
+                object-fit: cover;
+                object-position: center;
+                transform: scale(1.02);
+                animation: heroSlideIn 0.55s ease both;
+              }
+              .hero-visual {
+                position: relative;
+                min-width: 0;
+                width: 100%;
+              }
+              .hero-visual .hero-wheel {
+                position: absolute;
+                z-index: 2;
+                right: -125px;
+                top: 50%;
+                bottom: auto;
+                width: 310px !important;
+                height: 310px !important;
+                opacity: 0.62;
+                transform: translateY(-50%);
+                pointer-events: none;
+              }
+              .hero-banner-label {
+                position: absolute;
+                z-index: 1;
+                left: 22px;
+                bottom: 20px;
+                color: #fff;
+                font-size: 11px;
+                letter-spacing: 2px;
+                font-weight: 700;
+              }
+              .hero-banner-label strong {
+                display: block;
+                margin-top: 7px;
+                color: #FF5500;
+                font-family: 'Bebas Neue', sans-serif;
+                font-size: 30px;
+                letter-spacing: 1px;
+                line-height: 1;
+              }
+              .hero-banner-tag {
+                position: absolute;
+                z-index: 1;
+                top: 18px;
+                right: 18px;
+                padding: 8px 10px;
+                background: #FF5500;
+                color: #fff;
+                font-size: 10px;
+                font-weight: 700;
+                letter-spacing: 1.5px;
+              }
+              .hero-banner-arrow {
+                position: absolute;
+                z-index: 2;
+                top: 50%;
+                width: 32px;
+                height: 32px;
+                display: grid;
+                place-items: center;
+                border: 1px solid rgba(255,255,255,0.45);
+                background: rgba(8,8,8,0.48);
+                color: #fff;
+                font-size: 22px;
+                line-height: 1;
+                cursor: pointer;
+                transform: translateY(-50%);
+                transition: background 0.2s ease, border-color 0.2s ease;
+              }
+              .hero-banner-arrow:hover {
+                background: #FF5500;
+                border-color: #FF5500;
+              }
+              .hero-banner-arrow.previous { left: 14px; }
+              .hero-banner-arrow.next { right: 14px; }
+              .hero-banner-dots {
+                position: absolute;
+                z-index: 2;
+                right: 20px;
+                bottom: 20px;
+                display: flex;
+                gap: 7px;
+              }
+              .hero-banner-dot {
+                width: 22px;
+                height: 3px;
+                padding: 0;
+                border: 0;
+                background: rgba(255,255,255,0.45);
+                cursor: pointer;
+              }
+              .hero-banner-dot.active { background: #FF5500; }
+              @keyframes heroCopyIn {
+                from { opacity: 0; transform: translateY(18px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+              @keyframes heroBannerIn {
+                from { opacity: 0; transform: translate(22px, 18px) rotate(5deg); }
+                to { opacity: 1; transform: translate(0, 0) rotate(2deg); }
+              }
+              @keyframes heroSlideIn {
+                from { opacity: 0.45; transform: scale(1.06); }
+                to { opacity: 1; transform: scale(1.02); }
+              }
+              @media (max-width: 760px) {
+                .hero-content {
+                  grid-template-columns: 1fr !important;
+                  gap: 28px !important;
+                  padding: 90px 22px 72px !important;
+                }
+                .hero-copy { text-align: center; }
+                .hero-copy p { margin-left: auto; margin-right: auto; }
+                .hero-actions, .hero-stats { justify-content: center !important; }
+                .hero-banner { margin: 6px auto 0; width: min(100%, 520px); }
+                .hero-wheel { display: none !important; }
+              }
+
               .btn-primary {
                 background: #FF5500;
                 color: #fff;
@@ -321,7 +507,7 @@ export default function Home() {
               }
             `}</style>
 
-            <div style={{ display: "flex", gap: 16 }}>
+            <div className="hero-actions" style={{ display: "flex", gap: 16 }}>
               <Link to="/shop">
                 <button className="btn-primary">SHOP NOW</button>
               </Link>
@@ -330,6 +516,7 @@ export default function Home() {
               </Link>
             </div>
             <div
+              className="hero-stats"
               style={{
                 display: "flex",
                 gap: 40,
@@ -370,13 +557,69 @@ export default function Home() {
 
           {/* Hero visual: animated wheel */}
           <div
+            className="hero-visual"
             style={{
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
             }}
           >
-            <div style={{ position: "relative", width: 380, height: 380 }}>
+            <div className="hero-banner">
+              <img
+                key={heroBanners[activeBanner].tag}
+                className="hero-banner-image"
+                src={heroBanners[activeBanner].image}
+                alt={`${heroBanners[activeBanner].tag} cycling banner`}
+              />
+              <button
+                type="button"
+                className="hero-banner-arrow previous"
+                aria-label="Previous banner"
+                onClick={() =>
+                  setActiveBanner(
+                    (activeBanner - 1 + heroBanners.length) %
+                      heroBanners.length,
+                  )
+                }
+              >
+                &#8249;
+              </button>
+              <button
+                type="button"
+                className="hero-banner-arrow next"
+                aria-label="Next banner"
+                onClick={() =>
+                  setActiveBanner((activeBanner + 1) % heroBanners.length)
+                }
+              >
+                &#8250;
+              </button>
+              <span className="hero-banner-tag">
+                {heroBanners[activeBanner].tag}
+              </span>
+              <div className="hero-banner-label">
+                {heroBanners[activeBanner].eyebrow}
+                <strong>{heroBanners[activeBanner].title}</strong>
+              </div>
+              <div className="hero-banner-dots" aria-label="Choose banner">
+                {heroBanners.map((banner, index) => (
+                  <button
+                    key={banner.tag}
+                    type="button"
+                    className={`hero-banner-dot${
+                      index === activeBanner ? " active" : ""
+                    }`}
+                    aria-label={`Show ${banner.tag} banner`}
+                    aria-current={index === activeBanner ? "true" : undefined}
+                    onClick={() => setActiveBanner(index)}
+                  />
+                ))}
+              </div>
+            </div>
+            <div
+              className="hero-wheel"
+              style={{ position: "relative", width: 380, height: 380 }}
+            >
               <style>{`
                 .wheel-spin { transform-origin: 190px 190px; animation: spin 9s linear infinite; }
                 .wheel-spin-slow { transform-origin: 190px 190px; animation: spin 18s linear infinite; }

@@ -1,10 +1,12 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import ProductCard from "../components/ProductCard";
 import allProducts from "../data/allProducts";
 import { useCart } from "../context/CartContext";
 
 const ShopPage = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeBrand, setActiveBrand] = useState("All");
   const [sortBy, setSortBy] = useState("featured");
@@ -23,7 +25,10 @@ const ShopPage = () => {
   ];
 
   const handleAdd = (product) => {
-    addToCart(product);
+    if (!addToCart(product)) {
+      navigate("/account");
+      return;
+    }
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1200);
   };

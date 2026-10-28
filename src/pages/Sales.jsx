@@ -1,14 +1,19 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import saleProducts from "../data/saleProducts";
 import { useCart } from "../context/CartContext";
 
 const SalePage = () => {
+  const navigate = useNavigate();
   const [addedId, setAddedId] = useState(null);
   const [activeFilter, setActiveFilter] = useState("All");
   const { addToCart } = useCart();
 
   const handleAdd = (product) => {
-    addToCart(product);
+    if (!addToCart(product)) {
+      navigate("/account");
+      return;
+    }
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1200);
   };
@@ -217,14 +222,29 @@ const SalePage = () => {
                 </div>
                 <div
                   style={{
-                    height: 180,
+                    height: 230,
                     background: `linear-gradient(135deg, ${product.color} 0%, #111 100%)`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    position: "relative",
+                    padding: 18,
                   }}
                 >
-                  <span style={{ fontSize: 56 }}>{product.icon}</span>
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      style={{
+                        maxWidth: "92%",
+                        maxHeight: "88%",
+                        objectFit: "contain",
+                        filter: "drop-shadow(0 18px 26px rgba(0,0,0,0.45))",
+                      }}
+                    />
+                  ) : (
+                    <span style={{ fontSize: 56 }}>{product.icon}</span>
+                  )}
                 </div>
                 <div style={{ padding: "16px 20px 20px" }}>
                   <div

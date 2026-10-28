@@ -55,7 +55,11 @@ const SearchModal = ({ isOpen, onClose }) => {
   };
 
   const quickAdd = (item) => {
-    addToCart(item);
+    if (!addToCart(item)) {
+      onClose();
+      navigate("/account");
+      return;
+    }
     setAddedId(item.id);
     setTimeout(() => setAddedId(null), 1100);
   };
