@@ -13,20 +13,14 @@ import AccountPage from "./pages/Account";
 import ContactPage from "./pages/Contact";
 import FAQPage from "./pages/FAQ";
 import TrackOrderPage from "./pages/TrackOrder";
+import PaymentResult from "./pages/PaymentResult";
 
 function App() {
   return (
     <AuthProvider>
       <OrderProvider>
         <CartProvider>
-          <div
-            style={{
-              fontFamily: "'Inter', sans-serif",
-              background: "#0A0A0A",
-              color: "#F0F0F0",
-              minHeight: "100vh",
-            }}
-          >
+          <div className="app-shell">
             <link
               href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap"
               rel="stylesheet"
@@ -44,14 +38,11 @@ function App() {
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/faq" element={<FAQPage />} />
                 <Route path="/track-order" element={<TrackOrderPage />} />
+                <Route path="/payment/result" element={<PaymentResult />} />
               </Routes>
             </main>
 
             <Footer />
-            <style>{`
-          * { box-sizing: border-box; }
-          button, select, input, textarea { font-family: 'Inter', sans-serif; }
-        `}</style>
           </div>
         </CartProvider>
       </OrderProvider>

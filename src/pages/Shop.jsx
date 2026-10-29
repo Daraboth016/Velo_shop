@@ -1,28 +1,32 @@
-import React, { useState } from "react";
+import { useMemo, useState } from "react";
+import { FiFilter, FiSearch, FiSliders, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import PageHeader from "../components/PageHeader";
 import ProductCard from "../components/ProductCard";
+import ProductComparison from "../components/ProductComparison";
 import allProducts from "../data/allProducts";
 import { useCart } from "../context/CartContext";
+import {
+  DEFAULT_DISCOVERY_FILTERS,
+  filterAndSortProducts,
+  getDiscoveryOptions,
+  toggleComparisonProduct,
+} from "../utils/productDiscovery";
 
 const ShopPage = () => {
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState("All");
-  const [activeBrand, setActiveBrand] = useState("All");
-  const [sortBy, setSortBy] = useState("featured");
-  const [addedId, setAddedId] = useState(null);
   const { addToCart } = useCart();
+  const [filters, setFilters] = useState(DEFAULT_DISCOVERY_FILTERS);
+  const [addedId, setAddedId] = useState(null);
+  const [comparison, setComparison] = useState([]);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [loading] = useState(false);
+  const options = useMemo(() => getDiscoveryOptions(allProducts), []);
+  const results = useMemo(() => filterAndSortProducts(allProducts, filters), [filters]);
 
-  const categories = ["All", ...new Set(allProducts.map((p) => p.category))];
-  const brands = [
-    "All",
-    "Shimano",
-    "SRAM",
-    "Campagnolo",
-    "FSA",
-    "Maxxis",
-    "RockShox",
-  ];
+  const updateFilter = (key, value) => setFilters((current) => ({ ...current, [key]: value }));
+  const clearFilters = () => setFilters(DEFAULT_DISCOVERY_FILTERS);
+  const hasFilters = Object.entries(filters).some(([key, value]) => value !== DEFAULT_DISCOVERY_FILTERS[key]);
 
   const handleAdd = (product) => {
     if (!addToCart(product)) {
@@ -30,190 +34,124 @@ const ShopPage = () => {
       return;
     }
     setAddedId(product.id);
-    setTimeout(() => setAddedId(null), 1200);
+    window.setTimeout(() => setAddedId(null), 1200);
   };
 
-  let filtered = allProducts
-    .filter((p) => activeCategory === "All" || p.category === activeCategory)
-    .filter((p) => activeBrand === "All" || p.brand === activeBrand);
-
-  if (sortBy === "price-asc")
-    filtered = [...filtered].sort((a, b) => a.price - b.price);
-  if (sortBy === "price-desc")
-    filtered = [...filtered].sort((a, b) => b.price - a.price);
-  if (sortBy === "rating")
-    filtered = [...filtered].sort((a, b) => b.rating - a.rating);
+  const handleCompare = (product) => {
+    setComparison((current) => toggleComparisonProduct(current, product));
+  };
 
   return (
-    <div>
+    <div className="discovery-page">
       <PageHeader
-        eyebrow="BROWSE ALL COMPONENTS"
-        title="THE FULL"
-        accent="SHOP"
-        subtitle="Professional-grade parts from every major brand. Filter by category, brand, or price."
+        eyebrow="Explore the collection"
+        title="Find your"
+        accent="perfect part."
+        subtitle="Professional-grade components from the brands riders trust. Search, filter, and compare the details that matter."
       />
-
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "48px 40px" }}>
-        {/* Filters bar */}
-        <div
-          style={{
-            display: "flex",
-            gap: 24,
-            marginBottom: 40,
-            flexWrap: "wrap",
-            alignItems: "flex-start",
-          }}
-        >
-          <div style={{ flex: 1, minWidth: 240 }}>
-            <div
-              style={{
-                fontSize: 10,
-                color: "#555",
-                letterSpacing: 2,
-                marginBottom: 10,
-              }}
-            >
-              CATEGORY
-            </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  style={{
-                    background:
-                      activeCategory === cat ? "#FF5500" : "transparent",
-                    color: activeCategory === cat ? "#fff" : "#555",
-                    border: `1px solid ${activeCategory === cat ? "#FF5500" : "#222"}`,
-                    padding: "6px 14px",
-                    fontSize: 10,
-                    fontWeight: 600,
-                    letterSpacing: 1,
-                    cursor: "pointer",
-                    transition: "all .15s",
-                  }}
-                >
-                  {cat.toUpperCase()}
-                </button>
-              ))}
-            </div>
+      <main className="discovery-shell page-shell">
+        <section className="discovery-toolbar" aria-label="Product discovery controls">
+          <div className="discovery-search">
+            <FiSearch />
+            <input
+              type="search"
+              value={filters.query}
+              onChange={(event) => updateFilter("query", event.target.value)}
+              placeholder="Search products, brands, or categories..."
+              aria-label="Search products"
+            />
+            {filters.query && <button type="button" aria-label="Clear search" onClick={() => updateFilter("query", "")}><FiX /></button>}
           </div>
-          <div style={{ flex: 1, minWidth: 240 }}>
-            <div
-              style={{
-                fontSize: 10,
-                color: "#555",
-                letterSpacing: 2,
-                marginBottom: 10,
-              }}
-            >
-              BRAND
-            </div>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {brands.map((b) => (
-                <button
-                  key={b}
-                  onClick={() => setActiveBrand(b)}
-                  style={{
-                    background: activeBrand === b ? "#1C1C1E" : "transparent",
-                    color: activeBrand === b ? "#F0F0F0" : "#555",
-                    border: `1px solid ${activeBrand === b ? "#444" : "#222"}`,
-                    padding: "6px 14px",
-                    fontSize: 10,
-                    fontWeight: 600,
-                    letterSpacing: 1,
-                    cursor: "pointer",
-                    transition: "all .15s",
-                  }}
-                >
-                  {b.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div style={{ minWidth: 160 }}>
-            <div
-              style={{
-                fontSize: 10,
-                color: "#555",
-                letterSpacing: 2,
-                marginBottom: 10,
-              }}
-            >
-              SORT BY
-            </div>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              style={{
-                background: "#111",
-                color: "#F0F0F0",
-                border: "1px solid #222",
-                padding: "6px 14px",
-                fontSize: 11,
-                cursor: "pointer",
-                width: "100%",
-                outline: "none",
-              }}
-            >
+          <button type="button" className="discovery-filter-toggle" onClick={() => setFiltersOpen((open) => !open)}><FiSliders /> Filters</button>
+          <div className="discovery-sort">
+            <label htmlFor="sort-products">Sort</label>
+            <select id="sort-products" value={filters.sortBy} onChange={(event) => updateFilter("sortBy", event.target.value)}>
               <option value="featured">Featured</option>
-              <option value="price-asc">Price: Low → High</option>
-              <option value="price-desc">Price: High → Low</option>
-              <option value="rating">Top Rated</option>
+              <option value="rating">Top rated</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="name">Name: A to Z</option>
             </select>
           </div>
-        </div>
+        </section>
 
-        <div
-          style={{
-            fontSize: 12,
-            color: "#444",
-            marginBottom: 24,
-            letterSpacing: 1,
-          }}
-        >
-          {filtered.length} PRODUCTS
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: 2,
-          }}
-        >
-          {filtered.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onAdd={() => handleAdd(product)}
-              addedId={addedId}
-            />
-          ))}
-        </div>
-
-        {filtered.length === 0 && (
-          <div
-            style={{ textAlign: "center", padding: "80px 0", color: "#444" }}
-          >
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
-            <div
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 28,
-                letterSpacing: 2,
-                marginBottom: 8,
-              }}
-            >
-              NO PRODUCTS FOUND
+        <div className={`discovery-layout${filtersOpen ? " filters-visible" : ""}`}>
+          <aside className="filter-panel">
+            <div className="filter-panel__heading">
+              <span><FiFilter /> Refine results</span>
+              {hasFilters && <button type="button" onClick={clearFilters}>Clear all</button>}
             </div>
-            <div style={{ fontSize: 13, color: "#555" }}>
-              Try adjusting your filters.
+            <fieldset>
+              <legend>Category</legend>
+              {options.categories.map((category) => (
+                <label key={category} className="filter-option">
+                  <input type="radio" name="category" checked={filters.category === category} onChange={() => updateFilter("category", category)} />
+                  <span>{category}</span>
+                  <small>{category === "All" ? allProducts.length : allProducts.filter((product) => product.category === category).length}</small>
+                </label>
+              ))}
+            </fieldset>
+            <fieldset>
+              <legend>Brand</legend>
+              {options.brands.map((brand) => (
+                <label key={brand} className="filter-option">
+                  <input type="radio" name="brand" checked={filters.brand === brand} onChange={() => updateFilter("brand", brand)} />
+                  <span>{brand}</span>
+                  <small>{brand === "All" ? allProducts.length : allProducts.filter((product) => product.brand === brand).length}</small>
+                </label>
+              ))}
+            </fieldset>
+            <fieldset>
+              <legend>Price range</legend>
+              <div className="price-inputs">
+                <label><span>Min</span><input type="number" min={options.minPrice} max={options.maxPrice} value={filters.minPrice} placeholder={`$${options.minPrice}`} onChange={(event) => updateFilter("minPrice", event.target.value)} /></label>
+                <label><span>Max</span><input type="number" min={options.minPrice} max={options.maxPrice} value={filters.maxPrice} placeholder={`$${options.maxPrice}`} onChange={(event) => updateFilter("maxPrice", event.target.value)} /></label>
+              </div>
+            </fieldset>
+            <button type="button" className="filter-panel__apply" onClick={() => setFiltersOpen(false)}>Show results</button>
+          </aside>
+
+          <section className="results-panel" aria-live="polite">
+            <div className="results-heading">
+              <div><strong>{loading ? "Loading..." : results.length}</strong> components <span>{hasFilters ? "matching your filters" : "in the collection"}</span></div>
+              {comparison.length > 0 && <span className="comparison-count">{comparison.length}/3 comparing</span>}
             </div>
-          </div>
-        )}
+            {loading ? (
+              <div className="results-grid">{[1, 2, 3].map((item) => <div className="product-skeleton" key={item} />)}</div>
+            ) : results.length ? (
+              <div className="results-grid">
+                {results.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onAdd={() => handleAdd(product)}
+                    addedId={addedId}
+                    onCompare={handleCompare}
+                    isCompared={comparison.some((item) => item.id === product.id)}
+                    comparisonFull={comparison.length >= 3}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="empty-results">
+                <div className="empty-results__icon"><FiSearch /></div>
+                <h2>No components found.</h2>
+                <p>Try a broader search or remove one of your filters to see more of the collection.</p>
+                <button type="button" className="button button--primary" onClick={clearFilters}>Clear filters</button>
+              </div>
+            )}
+          </section>
+        </div>
+      </main>
+      <div className="page-shell">
+        <ProductComparison
+          products={comparison}
+          onRemove={(id) => setComparison((current) => current.filter((product) => product.id !== id))}
+          onClear={() => setComparison([])}
+        />
       </div>
     </div>
   );
 };
+
 export default ShopPage;

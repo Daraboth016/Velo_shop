@@ -7,7 +7,6 @@ import campagnoloChainsetImg from "../assets/Campagnolo_Super_Record_Chainset-re
 import fsaHandlebarImg from "../assets/FSA_K-Force_Carbon_Handlebar-removebg-preview.png";
 import rockShoxForkImg from "../assets/RockShox_Pike_Ultimate_Fork-removebg-preview.png";
 import maxxisTireImg from "../assets/Maxxis_Minion_DHF_Tire-removebg-preview.png";
-import genericBikeImg from "../assets/hero.png";
 
 const allProducts = [
   {
@@ -22,6 +21,7 @@ const allProducts = [
     color: "#2a2a2a",
     icon: "GEAR",
     image: shimanoXtImg,
+    specifications: { "Speed": "12-speed", "Cassette": "10-51T", "Crank length": "175 mm", "Rider type": "Trail / MTB" },
   },
   {
     id: 2,
@@ -35,6 +35,7 @@ const allProducts = [
     color: "#1a1a2e",
     icon: "DISC",
     image: sramCodeRscImg,
+    specifications: { "Brake type": "4-piston hydraulic", "Rotor size": "200 mm", "Reach adjust": "Tool-free", "Rider type": "Trail / Enduro" },
   },
   {
     id: 3,
@@ -48,6 +49,7 @@ const allProducts = [
     color: "#0f2027",
     icon: "SPD",
     image: shimanoSpdImg,
+    specifications: { "Body": "Carbon composite", "Axle": "Chromoly steel", "Platform": "Road clipless", "Rider type": "Road / race" },
   },
   {
     id: 4,
@@ -61,6 +63,7 @@ const allProducts = [
     color: "#16213e",
     icon: "12X",
     image: sramXx1Img,
+    specifications: { "Speed": "12-speed", "Range": "10-50T", "Material": "Machined steel", "Rider type": "MTB / trail" },
   },
   {
     id: 5,
@@ -74,6 +77,7 @@ const allProducts = [
     color: "#1a0a00",
     icon: "RIM",
     image: shimanoWheelsetImg,
+    specifications: { "Wheel size": "700c", "Rim": "Carbon tubeless", "Brake": "Center Lock disc", "Rider type": "Road / race" },
   },
   {
     id: 6,
@@ -87,6 +91,7 @@ const allProducts = [
     color: "#21140d",
     icon: "FORK",
     image: rockShoxForkImg,
+    specifications: { "Travel": "160 mm", "Wheel size": "29 inch", "Damper": "Charger 3 RC2", "Rider type": "Trail / enduro" },
   },
   {
     id: 7,
@@ -100,6 +105,7 @@ const allProducts = [
     color: "#151515",
     icon: "TIRE",
     image: maxxisTireImg,
+    specifications: { "Size": "29 x 2.5 inch", "Casing": "EXO", "Compound": "3C MaxxTerra", "Rider type": "Trail / enduro" },
   },
   {
     id: 8,
@@ -113,6 +119,7 @@ const allProducts = [
     color: "#221111",
     icon: "SR",
     image: campagnoloChainsetImg,
+    specifications: { "Speed": "12-speed", "Chainring": "48/32T", "Material": "Carbon fiber", "Rider type": "Road / race" },
   },
   {
     id: 9,
@@ -126,6 +133,7 @@ const allProducts = [
     color: "#102018",
     icon: "BAR",
     image: fsaHandlebarImg,
+    specifications: { "Width": "42 cm", "Material": "Carbon fiber", "Clamp": "31.8 mm", "Rider type": "Road / gravel" },
   },
 ];
 

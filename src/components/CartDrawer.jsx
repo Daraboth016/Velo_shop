@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useOrders } from "../context/OrderContext";
+import { readJsonResponse } from "../utils/apiResponse";
 
 const initialForm = {
   fullName: "",
@@ -39,6 +40,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
   const [error, setError] = useState("");
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState("");
+  const [paymentStarting, setPaymentStarting] = useState(false);
 
   const shippingCost =
     shippingMethod === "express" ? 18 : cartTotal >= 150 ? 0 : 8;
@@ -56,50 +58,50 @@ const CartDrawer = ({ isOpen, onClose }) => {
     setPaymentForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const cleanCard = paymentForm.cardNumber.replace(/\s+/g, "");
-    const cleanExpiry = paymentForm.expiry.trim();
-    if (
-      !paymentForm.fullName ||
-      !paymentForm.email ||
-      !cleanCard ||
-      !cleanExpiry ||
-      !paymentForm.cvv
-    ) {
-      setError("Please complete all payment fields.");
+    if (!paymentForm.fullName.trim() || !paymentForm.email.trim()) {
+      setError("Please enter your name and email address.");
       return;
     }
-    if (cleanCard.length < 15) {
-      setError("Please enter a valid card number.");
-      return;
-    }
-    if (!/^\d{2}\/\d{2}$/.test(cleanExpiry)) {
-      setError("Use expiry format MM/YY.");
-      return;
-    }
-    if (!/^\d{3,4}$/.test(paymentForm.cvv)) {
-      setError("Please enter a valid CVV.");
-      return;
-    }
-
-    const generatedOrderId = `VELO-${Date.now().toString().slice(-6)}`;
-    addOrder({
-      id: generatedOrderId,
-      email: paymentForm.email.trim().toLowerCase(),
-      items: cartItems,
-      total: orderTotal,
-      createdAt: new Date().toISOString(),
-      status: "Processing",
-      shipping:
-        shippingMethod === "express" ? "Express delivery" : "Standard delivery",
-    });
-    setOrderId(generatedOrderId);
-    clearCart();
+    setPaymentStarting(true);
     setError("");
-    setCheckoutOpen(false);
-    setOrderSuccess(true);
-    setPaymentForm(initialForm);
+    try {
+      const paymentResponse = await fetch("/api/payments/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName: paymentForm.fullName,
+          email: paymentForm.email,
+          items: cartItems.map(({ id, qty }) => ({ id, qty })),
+          shippingMethod,
+          currency: "USD",
+        }),
+      });
+      const payment = await readJsonResponse(paymentResponse);
+      if (!paymentResponse.ok || !payment.checkoutUrl) {
+        throw new Error(
+          payment.error ||
+          "ABA PayWay did not return a checkout URL. Verify the sandbox credentials and merchant setup.",
+        );
+      }
+      addOrder({
+        id: payment.transactionId,
+        email: paymentForm.email.trim().toLowerCase(),
+        items: cartItems,
+        total: orderTotal,
+        createdAt: new Date().toISOString(),
+        status: "Pending payment",
+        shipping: shippingMethod === "express" ? "Express delivery" : "Standard delivery",
+      });
+      clearCart();
+      setPaymentForm(initialForm);
+      window.location.assign(payment.checkoutUrl);
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setPaymentStarting(false);
+    }
   };
 
   const handleDone = () => {
@@ -289,95 +291,9 @@ const CartDrawer = ({ isOpen, onClose }) => {
                 </section>
                 <section>
                   <div style={sectionLabel}>03 / PAYMENT DETAILS</div>
-                  <div
-                    style={{
-                      background: "linear-gradient(135deg, #252525, #111)",
-                      border: "1px solid #3b3b3b",
-                      padding: 18,
-                      marginBottom: 12,
-                      position: "relative",
-                      minHeight: 115,
-                    }}
-                  >
-                    <div
-                      style={{ color: "#aaa", fontSize: 10, letterSpacing: 2 }}
-                    >
-                      VELOSHOP PAYMENTS
-                    </div>
-                    <div
-                      style={{
-                        fontFamily: "monospace",
-                        letterSpacing: 3,
-                        fontSize: 17,
-                        marginTop: 22,
-                        color: "#eee",
-                      }}
-                    >
-                      {paymentForm.cardNumber
-                        ? paymentForm.cardNumber.replace(/\d(?=\d{4})/g, "•")
-                        : "••••  ••••  ••••  ••••"}
-                    </div>
-                    <div
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        color: "#777",
-                        fontSize: 9,
-                        marginTop: 15,
-                        letterSpacing: 1,
-                      }}
-                    >
-                      <span>{paymentForm.fullName || "CARDHOLDER NAME"}</span>
-                      <span>{paymentForm.expiry || "MM/YY"}</span>
-                    </div>
-                    <div
-                      style={{
-                        position: "absolute",
-                        top: 18,
-                        right: 18,
-                        color: "#FF5500",
-                        fontWeight: 800,
-                        fontSize: 13,
-                      }}
-                    >
-                      V
-                    </div>
-                  </div>
-                  <input
-                    required
-                    name="cardNumber"
-                    value={paymentForm.cardNumber}
-                    onChange={handleChange}
-                    placeholder="Card number"
-                    maxLength={19}
-                    style={inputStyle}
-                  />
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 10,
-                      marginTop: 10,
-                    }}
-                  >
-                    <input
-                      required
-                      name="expiry"
-                      value={paymentForm.expiry}
-                      onChange={handleChange}
-                      placeholder="Expiry · MM/YY"
-                      maxLength={5}
-                      style={inputStyle}
-                    />
-                    <input
-                      required
-                      name="cvv"
-                      value={paymentForm.cvv}
-                      onChange={handleChange}
-                      placeholder="Security code"
-                      maxLength={4}
-                      style={inputStyle}
-                    />
+                  <div className="payway-payment-notice">
+                    <strong>ABA PayWay · KHQR</strong>
+                    <p>You will complete payment securely on ABA PayWay using KHQR. VeloShop never receives or stores card details.</p>
                   </div>
                 </section>
                 {error && (
@@ -511,7 +427,7 @@ const CartDrawer = ({ isOpen, onClose }) => {
                     fontSize: 11,
                   }}
                 >
-                  PAY ${orderTotal.toFixed(2)}
+                  {paymentStarting ? "CONNECTING TO ABA PAYWAY..." : `PAY ${orderTotal.toFixed(2)}`}
                 </button>
                 <div
                   style={{

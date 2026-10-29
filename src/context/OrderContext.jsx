@@ -20,11 +20,19 @@ export const OrderProvider = ({ children }) => {
     localStorage.setItem(ORDERS_KEY, JSON.stringify(nextOrders));
   };
 
+  const updateOrderStatus = (id, status) => {
+    const nextOrders = orders.map((order) =>
+      order.id === id ? { ...order, status } : order,
+    );
+    setOrders(nextOrders);
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(nextOrders));
+  };
+
   const getOrdersForUser = (email) =>
     orders.filter((order) => order.email === email);
 
   return (
-    <OrderContext.Provider value={{ orders, addOrder, getOrdersForUser }}>
+    <OrderContext.Provider value={{ orders, addOrder, updateOrderStatus, getOrdersForUser }}>
       {children}
     </OrderContext.Provider>
   );
