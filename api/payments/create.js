@@ -4,6 +4,11 @@ import { priceCart } from "../_lib/catalog.js";
 
 export default async function handler(request, response) {
   if (request.method !== "POST") return response.status(405).json({ error: "Method not allowed." });
+  if (!process.env.POSTGRES_URL) {
+    return response.status(503).json({
+      error: "Payment database is not configured. Add POSTGRES_URL to the server environment.",
+    });
+  }
   try {
     const { fullName, email, phone, items, shippingMethod, currency = "USD" } = request.body || {};
     if (typeof fullName !== "string" || typeof email !== "string" || !fullName.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
